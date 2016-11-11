@@ -1,0 +1,19 @@
+#!/bin/sh
+PATH=/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin
+printf "%s\r\n" "Content-Type: application/json"
+printf "%s\r\n\r\n{" "access-control-allow-origin: *"
+
+interfaces=`batctl if | sed 's/:.*//'`
+c=0
+for f in $interfaces
+do
+	if [ $c -ne 0 ]; then echo -n ','; fi
+	a=`cat /sys/class/net/$f/address`
+	echo -n '"'$f'":{"address":"'$a'"}'
+	c=1
+done
+
+echo "}"
+
+exit
+

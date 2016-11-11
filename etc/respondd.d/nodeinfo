@@ -1,0 +1,53 @@
+@readConf(../../bin/glob.sh)
+{
+	"software": {
+		"autoupdater": {
+			"branch":"none",
+			"enabled":false
+		},
+		"batman-adv": {
+			"version":@dkern(/sys/module/batman_adv/version),
+			"compat":15
+		},
+		"fastd": {
+			"version":"@exec(./fastd-ver.sh)",
+			"enabled":true
+		},
+		"firmware": {
+			"base":@lsbRelease(-i),
+			"release":@lsbRelease(-r)
+		},
+		"status-page": {
+			"api":1
+		}
+	},
+	"network": {
+		"addresses": [
+			@allIPv6(br-client)
+		],
+		"mesh": {
+			"bat0": {
+				"interfaces": {
+					"tunnel": [
+						@macList(mesh-vpn)
+					],
+					"wireless": [
+						@macList(mesh0)
+					]
+				}
+			}
+		},
+		"mac":@mac(br-client)
+	},
+	@,include(_location)
+	@,include(_owner)
+	"system": {
+		"site_code":@dvar(SITE)
+	},
+	"node_id":@nodeid(bat0),
+	"hostname":@dvar(HOSTNAME),
+	"hardware": {
+		"model":@uname(machine),
+		"nproc":@nproc()
+	}
+}

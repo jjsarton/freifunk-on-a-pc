@@ -1,0 +1,7 @@
+{	"batadv":{
+		@batadv(bat0)
+	},
+	"wifi":{
+		@wifi(mesh0)
+	}
+}

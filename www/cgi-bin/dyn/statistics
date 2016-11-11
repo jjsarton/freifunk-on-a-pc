@@ -1,0 +1,8 @@
+#!/bin/sh
+PATH=/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin
+
+echo 'Access-Control-Allow-Origin: *'
+
+CMD='exec gluon-neighbour-info -s "" -l -d ::1 -p 1001 -t 3 -r statistics'
+
+exec ../../../bin/sse-multiplex "$CMD"

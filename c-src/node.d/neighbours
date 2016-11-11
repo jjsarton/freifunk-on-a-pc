@@ -1,0 +1,8 @@
+{	"batadv":{
+		@batadv(bat0)
+	},
+	"wifi":{
+		@wifi(mesh0)
+	},
+	@nodeid(br-client)
+}

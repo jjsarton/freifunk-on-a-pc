@@ -1,0 +1,23 @@
+@readConf(../glob.sh)
+{
+	"node_id":@nodeid(eth0),
+	"clients":
+	{
+		"total":@exec(./clients.sh)
+	},
+	"rootfs_usage":@fsusage(),	
+	@,fastdConnection(fastd.sock)
+	"memory":{
+		@memory()
+	},
+	"uptime":@uptime(),
+	"idletime":@idletime(),
+	"gateway":@gateway(bat0),
+	"processes":
+	{
+		"total":@nproc(),
+		"running":1
+	},
+	@traffic(bat0),
+	"loadavg":@loadavg()
+}

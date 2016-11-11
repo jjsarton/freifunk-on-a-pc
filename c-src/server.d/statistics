@@ -1,0 +1,13 @@
+{
+    "traffic": {
+    	@traffic(bat0)
+    },
+    "memory": {
+    	@memory()
+    },
+    "uptime": @uptime(),
+    "loadavg": @loadavg(),
+    "processes": {
+    	@processes()
+    }
+}

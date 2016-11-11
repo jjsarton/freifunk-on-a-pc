@@ -1,0 +1,23 @@
+{
+	"node_id": @nodeid(bat0),
+        "hostname": "@exec(hostname)",
+        "vpn": true,
+        "system": {
+            "site_code": @dvar(SITE)
+        },
+        "hardware": {
+            "nproc": @nproc(),
+            "model": @uname(machine)
+        },
+        "network": {
+            "mac": @mac(bat0), 
+            "addresses": [@macList(br0)],
+            "mesh": {
+                "bat0":{
+                    "interfaces": {
+                        "tunnel":@macList(mesh-vpn)
+                    }
+                }
+            }
+        }
+}

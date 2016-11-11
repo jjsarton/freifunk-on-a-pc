@@ -1,0 +1,17 @@
+#!/bin/sh
+PATH=/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin
+
+badrequest() {
+        echo 'Status: 400 Bad Request'
+        echo
+        exit 1
+}
+
+
+batctl if | cut -d: -f1 | grep -qxF "$QUERY_STRING" || badrequest
+
+echo 'Access-Control-Allow-Origin: *'
+
+CMD="stations $QUERY_STRING"
+
+exec ../../../bin/sse-multiplex "$CMD"
