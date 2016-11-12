@@ -1,0 +1,8 @@
+﻿Changes:
+
+Nov/13/2016:
+- Added spawning of a shell within the name space.
+- Added Check for rights (root).
+- DNS has not working correctly, corrected the initialization for /etc/netns/<name>/resolv.conf.
+- dhcpcd start now directly in the background (if used).
+- Some file what written under /tmp, corrected.

@@ -1,10 +1,10 @@
-Freifunk-on-a-pc
+﻿Freifunk-on-a-pc
 
 This is a small footprint environment which allow using your Linux PC or notebook as Freifunk router or offloader.
 
 This allow using your system as normally and to provide Freifunk, or to develop and test some features or new components as for example batman-adv, alfred and so on.
 
-Inspecting the network traffic easy, you can launch wireshark within the network space and look at the traffic on te different devices. As root enter the name space with “ip netns exec <namespace> bash” and then launch wireshark with “su <user> -c wireshark &”. 
+Inspecting the network traffic easy, you can launch wireshark within the network space and look at the traffic on te different devices. As root enter the name space with “ip netns exec <name space> bash” and then launch wireshark with “su <user> -c wireshark &”. 
 
 The router / offloader run within a network name space and is therefor separated from the normal working space.  Within the name space all services which are normally announced are unknown, utilities as avahi and so on have no access to the network interfaces pushed or creates within the network name space.
 
@@ -23,13 +23,13 @@ A host AP and an ieee802.11s mesh device will be build if you configure this fea
 
 Further Requirement:
 
-You can provide run a dhcp client within the name space, I have choosed dhcpcd. A modified copy of the script 2o-resolv.conf is provided within the directory dhcpcd-hook. The http server I use within the name space is thttpd.
+You can provide run a dhcp client within the name space, I have chosen dhcpcd. A modified copy of the script 2o-resolv.conf is provided within the directory dhcpcd-hook. The http server I use within the name space is thttpd.
 
 The choice is based on an easy configuration within the name space. 
 
 Installation:
 
-You may install this anywhere on your PC or notebooj, within the home directory or for example under /opt.
+You may install this anywhere on your PC or notebook, within the home directory or for example under /opt.
 Go to the c-src directory, call “make; make install”, the binaries will be compiled and installed within our working environment.
 
 Configuration:
@@ -46,9 +46,14 @@ Launching:
 Go to the bin directory and as root call “./freifunk start”.
 
 Stopping:
+
 Call “./freifunk.sh stop”. All specific services will be killed and the generated virtual network devices will be deleted.
 
 You have also the ability (if you have enough network hardware devices) to launch more router / offloader. Each instance must be started on it own copy of this suite.
+
+lauching a shell within the netns:
+
+./freifunk sh
 
 BUGS:
 A lot, no man pages and documentation. Some features are not provided.
