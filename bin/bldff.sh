@@ -13,8 +13,9 @@ net_config()
 	sysctl net.ipv4.conf.all.forwarding=1
 	sysctl net.ipv4.ip_forward=1
 	sysctl net.ipv6.conf.br-wan.autoconf=0
-	#sysctl net.ipv6.conf.br-wan.accept_ra=2
-	sysctl net.ipv6.conf.br-client.use_tempaddr=0
+	sysctl net.ipv6.conf.local-node.autoconf=0
+	sysctl net.ipv6.conf.default.use_tempaddr=0
+	sysctl net.ipv6.conf.all.use_tempaddr=0
 }
 
 makeHostapdConf()
@@ -368,19 +369,11 @@ start()
 	# Create our dridge
 	createBridge br-wan $MAC_BRW "$IPV4_SUBNET.2/24" "${PREFIX}2/64 " eth0 $MAC_ETH
 	# set route for fastd
-	/tmp/setFastdRoute.sh
+	$DIR/bin/setFastdRoute.sh
 
 	# build iptables and ebtables
 	filter
 	createBridge br-client $MAC_BRC "" ""
-
-	# create macvlan not necessary but our node have it
-	ip link add  link br-client local-node type macvlan
-	sysctl net.ipv6.conf.local-node.autoconf=0 >/dev/null
-	ip link set local-node address 08:b8:7b:cb:ff:02
-	ip link set local-node up
-	ip a a $LOCAL_IPV4 dev local-node
-	ip a a $LOCAL_IPV6 dev local-node
 
 	# build hostapd.conf
 	makeHostapdConf > $DIR/etc/hostapd.conf
@@ -395,7 +388,7 @@ start()
 		iw dev mesh0 set meshid $MESHID
 
       	 	# Start the AP and add our client to the vr-client vridge
-		hostapd -dd -B -P /tmp/hostad-$WIFI.pid $DIR/etc/hostapd.conf 
+		hostapd -dd -B -P $DIR/tmp/hostad-$WIFI.pid $DIR/etc/hostapd.conf 
 
        		# finish configuration for our mesh interface
 		ip l set dev mesh0 up
@@ -438,19 +431,29 @@ start()
 	
 	ip l set dev bat0 address $MAC_BAT0
 	ip l set dev bat0 master br-client
-	ip l set dev bat0 up
-	ip l set dev br-client up
 
-
+	# create macvlan not necessary but our node have it
+	ip link add  link br-client local-node type macvlan
 	net_config
 
+
+	ip link set local-node address 08:b8:7b:cb:ff:02
+	ip a a $LOCAL_IPV4 dev local-node
+	ip a a $LOCAL_IPV6 dev local-node
+	ip r a $FFRO_IPV6 dev br-client
+
+
+	ip l set dev br-client up
+	ip link set local-node up
+	
+	ip l set dev bat0 up
 	sleep 3
 	# mount debugfs, this is not done by ip netns
-	#mount -t debugfs | grep debugfs &> /dev/null || mount -t debugfs none /sys/kernel/debug
+	mount -t debugfs | grep debugfs &> /dev/null || mount -t debugfs none /sys/kernel/debug
 
 	if [ "$USE_DHCP" = "1" ]
 	then
-		dhcpcd -e NETNS=$NETNS br-client 
+		dhcpcd -h $HOSTNAME -L -b -e NETNS=$NETNS br-client 
 	fi
 
 	alfred -i br-client -b bat0 -u /var/run/alfred.sock > /dev/null 2>&1 &

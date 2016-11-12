@@ -96,7 +96,6 @@ createBridge()
 		shift
 	done
 	
-	ip l set dev $name up
 	if [ "$bip4" != "" ]
 	then
 		ip a a $bip4 dev $name

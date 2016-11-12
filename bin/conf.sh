@@ -27,33 +27,21 @@ PROVIDE_HTTP=1
 WIFI=wlp0s20u1
 ETH=enp0s20u4
 
-if [ "$MAIN" == WIFI ]
-then
-	MAIN_IF=$WIFI
-	HOSTNAME=True-Linux
-	ROLE=node
-else
-	MAIN_IF=$ETH
-	HOSTNAME=Linux-Offloader
-	ROLE=offloader
-fi
+HOSTNAME=True-Linux
+ROLE=node
 
 # configuration for the router/offloader itself
 
 MESH_ON_LAN=0
-MESHID=04:ff:37:d0:5f:5b
-SSID=suedpfalz.freifunk.net  # network
-SITE=ffld
-LOCAL_IPV4=10.215.0.1/32
-LOCAL_IPV6=2a03:2260:100a::1/128
+MESHID=<your mesh-id>
+SSID=<your ssid>
+SITE=<your site name>
+LOCAL_IPV4=10.<x>.0.1/32
+LOCAL_IPV6=<prefix>::1/128
+FFRO_IPV6=<ipv6>::/48
 WIFI_CHANNEL=11
 
-GW_LIST="0.queich.net 1.queich.net"
+GW_LIST="<gw1 gw2 ..."
 
-# We can use dhcp on the client.
-USE_DHCP=0
 # force using of batctl
 USE_BACTL=true
-
-#MESHID=04:ff:37:d0:5f:5c     # no collision with normal mesh
-#SSID=suedpfalz.freifunkB.net  # allow client connection to test

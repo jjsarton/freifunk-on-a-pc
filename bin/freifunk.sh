@@ -1,11 +1,15 @@
 #!/bin/bash
 
+if [[ $EUID -ne 0 ]]; then
+   echo "You must run this script as root."
+   exit 1
+fi
 
 # prepend the search path whith or location.
 # we expect all files and directories to be relative to thia $DIR
 
 b=$(basename $0)
-w=$(which $b) 2>/dev/null
+w=$(which $b 2>/dev/null)
 if [ "$?" = "0" ]
 then
 	DIR=$(dirname $w)
@@ -35,6 +39,9 @@ start1()
 		exit 1
 		;;
 	esac
+
+	rm -f $DIR/tmp/*
+
 	if [ "$USE_IPV6" = "1" ]
 	then
 		DNS=$(sed -n 's/nameserver[ \t]*\(.*:.*\)/\1/p' /etc/resolv.conf | tail -1 )
@@ -47,13 +54,13 @@ start1()
 	# the normal environment
 	if [ "$USE_IPV4" = "1" ]
 	then
-		sysctl net.ipv4.ip_forward=1
+		sysctl net.ipv4.ip_forward=1 >/dev/null
 	fi
 
 	if [ "$USE_IPV6" = "1" ]
 	then
-		sysctl net.ipv6.conf.all.forwarding=1
-		PREFIX=$(dhclient -6 -P $EXTIF -pf /tmp/dhclient-$NETNS-$EXTIF.pid 2> /dev/null | sed 's@.*=\(.*\)@\1@')
+		sysctl net.ipv6.conf.all.forwarding=1 >/dev/null
+		PREFIX=$(dhclient -6 -P $EXTIF -pf $DIR/tmp/dhclient-$NETNS-$EXTIF.pid 2> /dev/null | sed 's@.*=\(.*\)@\1@')
 		if [ "$PREFIX" = "" ]
 		then
 			# duclient allread running ?
@@ -61,7 +68,7 @@ start1()
 		fi
 		if [ "$PREFIX" != "" ]
 		then
-			# I get a /62 prefix from m< fritzbox so and want the second availabe prefix
+			# I get a /62 prefix from my fritzbox so and want the second availabe prefix
 			PREFIX=$(selectPrefix  $PREFIX 1)
 		fi
 	fi
@@ -109,6 +116,7 @@ export USE_DHCP=$USE_DHCP
 export ETH=$ETH
 export LOCAL_IPV4=$LOCAL_IPV4
 export LOCAL_IPV6=$LOCAL_IPV6
+export FFRO_IPV6=$FFRO_IPV6
 export MESHID=$MESHID
 export SSID=$SSID
 export WIFI_CHANNEL=$WIFI_CHANNEL
@@ -133,7 +141,7 @@ export SITE=$SITE
 	fi
 	ip a a $IPV4_SUBNET.1/24 dev veth0
 
-	radvd -C $DIR/etc/radvd-veth0.conf -u radvd -p /tmp/radvd-veth0.pid
+	radvd -C $DIR/etc/radvd-veth0.conf -u radvd -p $DIR/tmp/radvd-veth0.pid
 
 	if [ "$USE_IPV4" = "1" ]
 	then
@@ -150,7 +158,6 @@ logfile=/var/log/thttpd.log
 pidfile=/var/run/thttpd.pid
 cgipat=/cgi-bin/**
 charset=utf-8" > "$DIR/etc/thttpd.conf"
-
 	fi
 }
 
@@ -165,14 +172,14 @@ stop1()
 	if [ "$USE_IPV6" = "1" ]
 	then
 		: #sysctl net.ipv6.conf.all.forwarding=0
-		kill $(cat /tmp/radvd-veth0.pid)
+		kill $(cat $DIR/tmp/radvd-veth0.pid)
 	fi
 
-	if [ -e /tmp/dhclient-$NETNS-$EXTIF.pid ]
+	if [ -e $DIR/tmp/dhclient-$NETNS-$EXTIF.pid ]
 	then
 		# an other stuff is running !
-		kill $(cat /tmp/dhclient-$NETNS-$EXTIF.pid)
-		rm /tmp/dhclient-$NETNS-$EXTIF.pid
+		kill $(cat $DIR/tmp/dhclient-$NETNS-$EXTIF.pid)
+		rm $DIR/tmp/dhclient-$NETNS-$EXTIF.pid
 	fi
 	ip link set dev veth0 down
 	ip link del dev veth0 type veth peer name eth0
@@ -194,13 +201,13 @@ stop1()
 start2()
 {
 	# set route for fastd
-	> /tmp/setFastdRoute.sh
+	> $DIR/bin/setFastdRoute.sh
 	if [ "$USE_IPV4" = "1" ]
 	then
 		for gw in $GW_LIST
 		do
 			echo "ip r a $(queryHost 4 $gw)/32 via $IPV4_SUBNET.1 dev br-wan"
-		done >> /tmp/setFastdRoute.sh
+		done >> $DIR/bin/setFastdRoute.sh
 	fi
 
 	if [ "$PREFIX" != "" ]
@@ -208,18 +215,18 @@ start2()
 		for gw in $GW_LIST
 		do
 			echo "ip r a $(queryHost 6 0.queich.net)/128 dev br-wan"
-		done >> /tmp/setFastdRoute.sh
+		done >> $DIR/bin/setFastdRoute.sh
 	fi
-	chmod +x /tmp/setFastdRoute.sh
+	chmod +x $DIR/bin/setFastdRoute.sh
+
+	# create  resolv.conf
+	mkdir -p /etc/netns/$NETNS/
+	rm  -f /etc/netns/$NETNS/resolv.conf
+	cp /etc/resolv.conf /etc/netns/$NETNS/resolv.conf
 
 	# create the ff net space
 	ip netns add $NETNS
-	mkdir -p /etc/netns/$NETNS/
-	if [ -e /etc/netns/$NETNS/resolv.conf ]
-	then
-		rm /etc/netns/$NETNS/resolv.conf 
-	fi
-	#touch /etc/netns/$NETNS/resolv.conf
+
 	# move some device to the network space
 	ip link set eth0 netns $NETNS
 	ip link set $ETH netns $NETNS
@@ -232,17 +239,28 @@ start2()
 	then
 		ip netns exec $NETNS ip link set $ETH up
 	fi
-	ip netns exec $NETNS sh bldff.sh start
+	ip netns exec $NETNS bash bldff.sh start
 }
 
 stop2()
 {
 	ip netns pids $NETNS | while read pid;do kill $pid;done
-	ip netns exec $NETNS sh bldff.sh stop
+	ip netns exec $NETNS bash bldff.sh stop
 	ip netns del $NETNS
 }
 
 case $1 in
+sh)
+	shift
+	if ! ip netns | grep $NETNS >/dev/null
+	then
+		echo $NETNS not available
+		exit 1
+	else
+		source ./glob.sh
+		PS1="$NETNS # " ip netns exec $NETNS bash
+	fi
+;;
 start)
 	start1
 	sleep 2
