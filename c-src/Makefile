@@ -44,3 +44,8 @@ bin/sse-multiplexd: src/sse-multiplexd.c src/sse-multiplex.h
 
 install: $(OBJ)
 	@cp $(OBJ) ../bin
+
+uninstall:
+	@for f in $(OBJ);do if [ -e ../$$f ];then rm ../$$f;fi;done
+	@make clean;
+

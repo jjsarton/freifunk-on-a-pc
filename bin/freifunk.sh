@@ -214,7 +214,7 @@ start2()
 	then
 		for gw in $GW_LIST
 		do
-			echo "ip r a $(queryHost 6 0.queich.net)/128 dev br-wan"
+			echo "ip r a $(queryHost 6 $gw)/128 dev br-wan"
 		done >> $DIR/bin/setFastdRoute.sh
 	fi
 	chmod +x $DIR/bin/setFastdRoute.sh
@@ -239,6 +239,8 @@ start2()
 	then
 		ip netns exec $NETNS ip link set $ETH up
 	fi
+	export PATH=$PATH
+	export DIR=$DIR
 	ip netns exec $NETNS bash bldff.sh start
 }
 

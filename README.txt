@@ -24,13 +24,20 @@ A host AP and an ieee802.11s mesh device will be build if you configure this fea
 Further Requirement:
 
 You can provide run a dhcp client within the name space, I have chosen dhcpcd. A modified copy of the script 2o-resolv.conf is provided within the directory dhcpcd-hook. The http server I use within the name space is thttpd.
+If these programs are not available for your distribution, you must download the sources and compile.
+dhccpd: http://roy.marples.name/projects/dhcpcd/home
+thttpd: http://www.acme.com/software/thttpd/
 
-The choice is based on an easy configuration within the name space. 
+The dhclient from isc program is also needed. This package is provided by all distributions.
+
+The choice is based on an easy configuration within the name space.
+
+We use fastd for our communication with the gateways. This suite expect a fastd installation. See: https://fastd.readthedocs.io/en/v17/
 
 Installation:
 
 You may install this anywhere on your PC or notebook, within the home directory or for example under /opt.
-Go to the c-src directory, call “make; make install”, the binaries will be compiled and installed within our working environment.
+Go to the main directory, call “make install”, the binaries will be compiled and installed within our working environment.
 
 Configuration:
  
@@ -39,7 +46,7 @@ go to the bin directory and correct the script conf.sh. This script contains the
 IPv4 / IPv6 access is dependent of your ISP. You may have only IPv4, IPv4 and IPv6 or only IPv6 and natting for IPv4 on the ISP side (access via television cable).
 If you use IPv6, the scripts will launch dhclient in order to get a prefix delegation. I have a FritzBox router which return alway a /62 prefix. The script try to get a prefix delegation and select one of the subnet via the utility program selectPrefix. 
 
-Provide a fastd configuration according to your community requirement. The fast configuration shall be put to the etc directory (not /etc).
+Provide a fastd configuration according to your community requirement. The fast configuration shall be put to the etc directory (not /etc). The on up entry shall not be provided.
 
 Launching:
 

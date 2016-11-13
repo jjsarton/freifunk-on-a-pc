@@ -1,7 +1,6 @@
 #!/bin/bash
 
-DIR=/home/jj/FF
-export PATH=$DIR/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin/
+PATH=$DIR/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin/
 cd $DIR
 
 source ./bin/conf.sh
@@ -408,7 +407,7 @@ start()
 	fi
 
         # Start fastd	
-	fastd -c $DIR/etc/fastd.conf -d 
+	fastd -c $DIR/etc/fastd.conf --on-up $DIR/bin/setMeshVpnUp.sh -d 
 
         # Set BAT0
 	if [ "$WIFI" != "" ]
@@ -434,7 +433,7 @@ start()
 
 	# create macvlan not necessary but our node have it
 	ip link add  link br-client local-node type macvlan
-	net_config
+	net_config >/dev/null
 
 
 	ip link set local-node address 08:b8:7b:cb:ff:02

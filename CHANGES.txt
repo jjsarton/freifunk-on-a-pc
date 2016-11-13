@@ -1,8 +1,15 @@
 ﻿Changes:
 
-Nov/13/2016:
+Nov/13/2016
+- fixed little bugs
+- added a make file on the top directory
+- modified the README file
+- added a missed file
+
+Nov/12/2016:
 - Added spawning of a shell within the name space.
 - Added Check for rights (root).
-- DNS has not working correctly, corrected the initialization for /etc/netns/<name>/resolv.conf.
+- DNS has not working correctly, corrected the initialization for
+   /etc/netns/<name>/resolv.conf.
 - dhcpcd start now directly in the background (if used).
 - Some file what written under /tmp, corrected.
